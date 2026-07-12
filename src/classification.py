@@ -13,7 +13,7 @@ classify.py
 прозрачно откатывается на fallback, так что код всегда возвращает результат
 и запускается локально без ключей.
 """
-
+from pathlib import Path
 import re
 import os
 import json
@@ -22,7 +22,7 @@ from src.config import (CLASSIFY_KEYWORD_RULES, CLASSIFY_MIN_BEST_CONFIDENCE,
                         CLASSIFY_GAP_THRESHOLD, CLASSIFY_LABELS, CLASSIFY_SYSTEM_PROMPT)
 
 
-def eval_best(scores: Dict[str, float]) -> Tuple[str, float]:
+def _eval_best(scores: Dict[str, float]) -> Tuple[str, float]:
     """
     Функция принятия решения по словарю {категория: нормированная оценка 0..1}.
     Если top1 confidence меньше минимального порога или confidence top1-top2
@@ -30,10 +30,12 @@ def eval_best(scores: Dict[str, float]) -> Tuple[str, float]:
     Используется и keywords-, и LLM-классификатором, чтобы работало одинаково 
     в обоих режимах.
     """
+    if not scores or all(v <= 0 for v in scores.values()):
+        return "unknown", 0.0
     ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
     
     best_type, best_score = ranked[0]
-    second_score = ranked[1][1]
+    second_score = ranked[1][1] if len(ranked) > 1 else 0.0
     
     gap = best_score - second_score
     
@@ -63,7 +65,7 @@ def classify_keywords(text: str) -> Tuple[str, float]:
         return 'unknown', 0.0
     
     normalized_scores = {doc_type: score / total for doc_type, score in scores.items()}
-    best_type, best_score = eval_best(normalized_scores)
+    best_type, best_score = _eval_best(normalized_scores)
     return best_type, best_score
 
 
@@ -109,7 +111,7 @@ def classify_llm(text: str) -> Tuple[str, float]:
 
     scores = json.loads(content)
     scores = {label: float(scores.get(label, 0.0)) for label in CLASSIFY_LABELS}
-    best_type, best_score = eval_best(scores)
+    best_type, best_score = _eval_best(scores)
     return best_type, best_score
 
 def classify(text: str) -> Tuple[str, float]:
