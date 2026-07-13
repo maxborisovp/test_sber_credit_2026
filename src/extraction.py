@@ -19,7 +19,7 @@ import os
 import re
 from datetime import date as _date
 from typing import Any, Dict, Optional
-from config import (EXTRACT_FIELDS, EXTRACT_MONTHS_RU, EXTRACT_WORD_NUMS,
+from src.config import (EXTRACT_FIELDS, EXTRACT_MONTHS_RU, EXTRACT_WORD_NUMS,
                     EXTRACT_WORD_SCALES, EXTRACT_CONTRACTOR_LABELS,
                     EXTRACT_SYSTEM_PROMPT)
 
@@ -252,7 +252,7 @@ def _get_llm():
     # langchain_google_genai, если используется только fallback-режим.
     from langchain_google_genai import ChatGoogleGenerativeAI
 
-    return ChatGoogleGenerativeAI(model="gemini-3.5-flash", temperature=0)
+    return ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite", temperature=0)
 
 def extract_llm(text: str) -> Dict[str, Any]:
     """

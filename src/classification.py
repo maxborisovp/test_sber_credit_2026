@@ -84,7 +84,7 @@ def _get_llm():
     # langchain_google_genai, если используется только fallback-режим.
     from langchain_google_genai import ChatGoogleGenerativeAI
 
-    return ChatGoogleGenerativeAI(model="gemini-3.5-flash", temperature=0)
+    return ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite", temperature=0)
 
 
 def classify_llm(text: str) -> Tuple[str, float]:
