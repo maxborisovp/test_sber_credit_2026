@@ -20,8 +20,7 @@ import re
 from datetime import date as _date
 from typing import Any, Dict, Optional
 from src.config import (EXTRACT_FIELDS, EXTRACT_MONTHS_RU, EXTRACT_WORD_NUMS,
-                    EXTRACT_WORD_SCALES, EXTRACT_CONTRACTOR_LABELS,
-                    EXTRACT_SYSTEM_PROMPT)
+                    EXTRACT_WORD_SCALES, EXTRACT_CONTRACTOR_LABELS,)
 
 
 def _empty_result() -> Dict[str, Any]:
@@ -252,7 +251,7 @@ def _get_llm():
     # langchain_google_genai, если используется только fallback-режим.
     from langchain_google_genai import ChatGoogleGenerativeAI
 
-    return ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite", temperature=0)
+    return ChatGoogleGenerativeAI(model="gemini-2.0-flash-lite", temperature=0)
 
 def extract_llm(text: str) -> Dict[str, Any]:
     """
@@ -264,10 +263,25 @@ def extract_llm(text: str) -> Dict[str, Any]:
     from langchain_core.messages import HumanMessage, SystemMessage
 
     llm = _get_llm()
+    my_prompt = """Ты извлекаешь структурированные поля из текста делового
+        документа на русском языке (договор, спецификация, счёт, акт и т.п.).
 
+        Извлеки следующие поля:
+        - amount — итоговая сумма документа (число, без валюты и разделителей тысяч,
+        например 1250000.00). Если сумм несколько — бери итоговую/общую сумму.
+        - date — дата документа в формате ISO (YYYY-MM-DD)
+        - inn — ИНН контрагента (10 или 12 цифр, строка)
+        - contractor — наименование контрагента (поставщика/исполнителя/продавца)
+        - subject — краткий предмет документа (что поставляется/какие работы выполняются)
+
+        Если поле не удаётся найти в тексте — верни null для него.
+
+        Верни ТОЛЬКО JSON без пояснений и без markdown, строго в формате:
+        {"amount": <float|null>, "date": "<YYYY-MM-DD>"|null, "inn": "<str>"|null, "contractor": "<str>"|null, "subject": "<str>"|null}
+        """
     response = llm.invoke(
         [
-            SystemMessage(content=EXTRACT_SYSTEM_PROMPT),
+            SystemMessage(content=my_prompt),
             HumanMessage(content=text[:8000]),
         ]
     )

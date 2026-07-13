@@ -80,7 +80,7 @@ def _get_llm():
 
     from langchain_google_genai import ChatGoogleGenerativeAI
 
-    return ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite", temperature=0)
+    return ChatGoogleGenerativeAI(model="gemini-2.0-flash-lite", temperature=0)
 
 
 def check_subject_llm(subject: str) -> Tuple[bool, float, str]:
@@ -91,12 +91,27 @@ def check_subject_llm(subject: str) -> Tuple[bool, float, str]:
     и откатиться на check_subject_keywords().
     """
     llm = _get_llm()
+    my_prompt = """Ты — эксперт по льготной программе кредитования сельского
+        хозяйства. По условиям программы льготные кредиты выдаются ТОЛЬКО под
+        сельскохозяйственные нужды: закупка семян, удобрений, средств защиты
+        растений, сельхозтехники, кормов, ГСМ для полевых работ, ветеринарные нужды,
+        племенной скот, мелиорация/орошение, аренда сельхозземель, полевые работы
+        (посев, обработка почвы, уборка урожая) и аналогичные направления.
 
+        Тебе дают краткое описание предмета оплаты (subject) из документа. Определи:
+        - eligible — соответствует ли предмет оплаты условиям программы (true/false)
+        - confidence — уверенность в оценке, число от 0 до 1
+        - explanation — краткое объяснение на русском языке (одно предложение),
+        почему предмет относится или не относится к сельхоз-деятельности
+
+        Верни ТОЛЬКО JSON без пояснений и без markdown, строго в формате:
+        {"eligible": <true|false>, "confidence": <float>, "explanation": "<строка>"}
+        """
     from langchain_core.messages import HumanMessage, SystemMessage
 
     response = llm.invoke(
         [
-            SystemMessage(content=CHECK_SUBJECT_SYSTEM_PROMPT),
+            SystemMessage(content=my_prompt),
             HumanMessage(content=subject[:2000]),
         ]
     )

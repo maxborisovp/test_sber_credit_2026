@@ -19,7 +19,7 @@ import os
 import json
 from typing import Dict, Tuple
 from src.config import (CLASSIFY_KEYWORD_RULES, CLASSIFY_MIN_BEST_CONFIDENCE,
-                        CLASSIFY_GAP_THRESHOLD, CLASSIFY_LABELS, CLASSIFY_SYSTEM_PROMPT)
+                        CLASSIFY_GAP_THRESHOLD, CLASSIFY_LABELS)
 
 
 def _eval_best(scores: Dict[str, float]) -> Tuple[str, float]:
@@ -84,7 +84,7 @@ def _get_llm():
     # langchain_google_genai, если используется только fallback-режим.
     from langchain_google_genai import ChatGoogleGenerativeAI
 
-    return ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite", temperature=0)
+    return ChatGoogleGenerativeAI(model="gemini-2.0-flash-lite", temperature=0)
 
 
 def classify_llm(text: str) -> Tuple[str, float]:
@@ -97,10 +97,22 @@ def classify_llm(text: str) -> Tuple[str, float]:
     from langchain_core.messages import HumanMessage, SystemMessage
 
     llm = _get_llm()
+    my_prompt = """Ты — классификатор типов деловых документов на русском языке.
+        Тебе дают текст документа. Определи, насколько он соответствует каждому из
+        следующих типов, и верни оценку уверенности от 0 до 1 для каждого типа:
+
+        - contract — договор (поставки, подряда, оказания услуг и т.п.)
+        - spec — спецификация (приложение к договору с перечнем товаров/цен)
+        - invoice — счёт на оплату
+        - act — акт выполненных работ или универсальный передаточный документ (УПД)
+
+        Верни ТОЛЬКО JSON без каких-либо пояснений и без markdown, строго в формате:
+        {"contract": <float 0..1>, "spec": <float 0..1>, "invoice": <float 0..1>, "act": <float 0..1>}
+        """
 
     response = llm.invoke(
         [
-            SystemMessage(content=CLASSIFY_SYSTEM_PROMPT),
+            SystemMessage(content=my_prompt),
             HumanMessage(content=text[:8000]),  # на всякий случай ограничим длину
         ]
     )
