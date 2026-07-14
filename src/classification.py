@@ -79,7 +79,7 @@ def _get_llm():
     """
     if not os.environ.get("GOOGLE_API_KEY"):
         raise RuntimeError("GOOGLE_API_KEY is not set")
-
+    
     # Локальный импорт: модуль должен нормально грузиться и без установленного
     # langchain_google_genai, если используется только fallback-режим.
     from langchain_google_genai import ChatGoogleGenerativeAI
@@ -109,7 +109,7 @@ def classify_llm(text: str) -> Tuple[str, float]:
         Верни ТОЛЬКО JSON без каких-либо пояснений и без markdown, строго в формате:
         {"contract": <float 0..1>, "spec": <float 0..1>, "invoice": <float 0..1>, "act": <float 0..1>}
         """
-
+    
     response = llm.invoke(
         [
             SystemMessage(content=my_prompt),
@@ -120,7 +120,7 @@ def classify_llm(text: str) -> Tuple[str, float]:
     content = response.content.strip()
     # На случай, если модель всё же обернула JSON в ```json ... ```
     content = re.sub(r"^```(?:json)?|```$", "", content, flags=re.MULTILINE).strip()
-
+    
     scores = json.loads(content)
     scores = {label: float(scores.get(label, 0.0)) for label in CLASSIFY_LABELS}
     best_type, best_score = _eval_best(scores)
@@ -148,12 +148,3 @@ def classify(text: str) -> Tuple[str, float]:
     except Exception:
         return classify_keywords(text)
 
-if __name__ == "__main__":
-    # os.environ["GOOGLE_API_KEY"] = ""
-    os.environ.pop("GOOGLE_API_KEY", None)
-    filenames = ["../data/act_001.txt", "../data/act_002.txt", "../data/contract_001.txt", "../data/invoice_001.txt", "../data/invoice_002.txt", "../data/spec_001.txt", "../data/scan_ocr_001.txt"]
-    for filename in filenames: 
-        with open(filename, 'r', encoding='utf-8') as file:
-            doc_text = file.read()
-        result = classify(doc_text)
-        print(f"\nText - {filename},  result - {result}")

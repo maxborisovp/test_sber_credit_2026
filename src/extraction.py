@@ -325,16 +325,3 @@ def extract(text: str) -> Dict[str, Any]:
     except Exception:
         return extract_keywords(text)
 
-
-if __name__ == "__main__":
-    # os.environ["GOOGLE_API_KEY"] = ""
-    os.environ.pop("GOOGLE_API_KEY", None)
-    filenames = ["../data/act_001.txt", "../data/act_002.txt", "../data/contract_001.txt", "../data/invoice_001.txt", "../data/invoice_002.txt", "../data/spec_001.txt", "../data/scan_ocr_001.txt"]
-    for filename in filenames: 
-        with open(filename, 'r', encoding='utf-8') as file:
-            doc_text = file.read()
-        result = extract(doc_text)
-        result["filename"] = filename
-        print(f"=== {filename} ===")
-        for field in EXTRACT_FIELDS:
-            print(f"  {field}: {result[field]!r}")
