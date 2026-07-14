@@ -19,10 +19,9 @@ import json
 import os
 import re
 from typing import Dict, List, Optional, Tuple
-from src.config import (CHECK_SUBJECT_POSITIVE_CATEGORIES, CHECK_SUBJECT_NEGATIVE_CATEGORIES,)
-
-CHECK_SUBJECT_POSITIVE_CONFIDENCE_BY_WEIGHT = {3: 0.93, 2: 0.82, 1: 0.65}
-CHECK_SUBJECT_POSITIVE_NEGATIVE_CONFIDENCE_BY_WEIGHT = {3: 0.93, 2: 0.82, 1: 0.65}
+from src.config import (CHECK_SUBJECT_POSITIVE_CATEGORIES, CHECK_SUBJECT_NEGATIVE_CATEGORIES,
+                        CHECK_SUBJECT_POSITIVE_CONFIDENCE_BY_WEIGHT,
+                        CHECK_SUBJECT_NEGATIVE_CONFIDENCE_BY_WEIGHT,)
 
 
 def _best_category_match(
@@ -62,7 +61,7 @@ def check_subject_keywords(subject: str) -> Tuple[bool, float, str]:
 
     if negative:
         category, matched, weight = negative
-        confidence = CHECK_SUBJECT_POSITIVE_NEGATIVE_CONFIDENCE_BY_WEIGHT.get(weight, 0.6)
+        confidence = CHECK_SUBJECT_NEGATIVE_CONFIDENCE_BY_WEIGHT.get(weight, 0.6)
         explanation = f"'{matched.strip()}' относится к категории '{category}' и не относится к сельхоз-деятельности"
         return False, confidence, explanation
 
@@ -104,7 +103,7 @@ def check_subject_llm(subject: str) -> Tuple[bool, float, str]:
         почему предмет относится или не относится к сельхоз-деятельности
 
         Верни ТОЛЬКО JSON без пояснений и без markdown, строго в формате:
-        {"eligible": <true|false>, "confidence": <float>, "explanation": "<строка>"}
+        {"eligible": <true|false>, "confidence": <float>, "explanation": "<str>"}
         """
     from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -152,32 +151,3 @@ def check_subject(subject: str) -> Tuple[bool, float, str]:
     except Exception:
         return check_subject_keywords(subject)
 
-
-if __name__ == "__main__":
-    # os.environ["GOOGLE_API_KEY"] = ""
-    os.environ.pop("GOOGLE_API_KEY", None)
-    examples = [
-    # --- Должны соответствовать программе (matches=True) ---
-    "Поставка минеральных удобрений (карбамид марки Б)",
-    "Поставка семян подсолнечника посевная партия 2025",
-    "Техническое обслуживание и ремонт зерноуборочного комбайна John Deere",
-    "Поставка дизельного топлива для нужд сельхозпроизводства",
-    "Выполнение агрохимических работ, внесение КАС-32",
-    "Приобретение запасных частей для трактора МТЗ-82",
-    "Поставка средств защиты растений (фунгицид Амистар)",
-    "Страхование урожая от неблагоприятных погодных условий",
-    # --- Должны не соответствовать программе (matches=False) ---
-    "Аренда офисного помещения, г. Краснодар, ул. Ленина 15",
-    "Юридическое сопровождение сделки, консультационные услуги",
-    "Поставка офисной мебели и канцелярских товаров",
-    "Разработка корпоративного сайта и SEO-продвижение",
-    "Услуги клининговой компании, уборка административного здания",
-    "Обучение механизаторов работе с новой техникой",
-    # --- Спорные (неочевидный ответ) ---
-    "Транспортные услуги по доставке удобрений до склада",
-    "Аренда сельскохозяйственной техники на период уборки урожая",
-    "Услуги агронома-консультанта по подбору схемы удобрений",
-    ]
-    for subj in examples:
-        eligible, confidence, explanation = check_subject(subj)
-        print(f"{subj!r} -> \n{eligible}, {confidence}, {explanation}\n\n")
