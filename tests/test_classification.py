@@ -19,10 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from src.classification import _eval_best, classify_keywords, classify_llm, classify, _get_llm
 
 
-# ---------------------------------------------------------------------------
 # Тестовые документы (загружаются из tests/../data/*.txt)
-# ---------------------------------------------------------------------------
-
 _DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")
 
 

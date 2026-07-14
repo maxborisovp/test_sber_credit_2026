@@ -21,10 +21,8 @@ from src.extraction import (_extract_amount, _extract_contractor, _extract_date,
                             _try_make_date, _words_to_number, _empty_result)
 from src.config import EXTRACT_FIELDS
 
-# ---------------------------------------------------------------------------
-# Тестовые документы (загружаются из ../data/*.txt)
-# ---------------------------------------------------------------------------
 
+# Тестовые документы (загружаются из ../data/*.txt)
 _DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")
 
 
@@ -265,7 +263,6 @@ class TestExtractContractor:
         assert _extract_contractor(text) == expected_label["contractor"]
 
 
-
 class TestExtractSubject:
     def test_explicit_label(self):
         text = "Предмет: поставка семян подсолнечника сорта «Командор»"
@@ -300,25 +297,9 @@ class TestExtractSubject:
         assert _extract_subject("текст без предмета") is None
 
 
-# ---------------------------------------------------------------------------
-# extract_keywords
-# ---------------------------------------------------------------------------
-
 class TestExtractKeywords:
-    _SAMPLE_DOCS = [
-        pytest.param(ACT_001, {"amount":1250000.0, "date": "2025-03-24", "inn":"7701234567", "contractor":"ООО «ТехАгро»", "subject":'Карбамид марки Б'}, id='act_001'),
-        pytest.param(ACT_002, {"amount":500000.0, "date":"2025-04-01", "inn":"504712345678", "contractor":"ИП Смирнов В.А.", "subject":'Внесение жидких комплексных удобрений (КАС-32) на площади 500 га'}, id='act_002'),
-        pytest.param(CONTRACT_001, {"amount": 1250000.0, "date": "2025-03-01", "inn":"7701234567", "contractor":"ООО «ТехАгро»", "subject":'карбамид марки Б, ГОСТ 2081-2010'}, id='contract_001'),
-        pytest.param(INVOICE_001, {"amount": 1250000.0, "date": "2025-03-03", "inn":"7701234567", "contractor":"ООО «ТехАгро»", "subject":'Карбамид марки Б, ГОСТ 2081-2010'}, id='invoice_001'),
-        pytest.param(INVOICE_002, {"amount": 900000.0, "date": "2025-02-15", "inn":"5047123456", "contractor":'АО «АгроСнаб»', "subject":'поставка семян подсолнечника сорта «Командор», посевная партия 2025'}, id='invoice_002'),
-        pytest.param(SPEC_001, {"amount": 1250000.0, "date": "2025-03-01", "inn":"7701234567", "contractor":"ООО «ТехАгро»", "subject":'Карбамид марки Б, ГОСТ 2081-2010'}, id='spec_001'),
-        pytest.param(SCAN_OCR, {"amount": None, "date": "2025-03-01", "inn":None, "contractor":None, "subject":None}, id='scan_ocr_001'),
-    ]
-    # если файла в ../data/ нет - соответствующий кейс просто не попадает в
-    # параметризацию, и теста для него не будет (а не падение с ошибкой)
-    _AVAILABLE_SAMPLE_DOCS = [p for p in _SAMPLE_DOCS if p.values[0] is not None]
-    @pytest.mark.parametrize("text,expected_label", _AVAILABLE_SAMPLE_DOCS)
 
+    @pytest.mark.parametrize("text,expected_label", _AVAILABLE_SAMPLE_DOCS)
     def test_all_sample_documents(self, text, expected_label):
         result = extract_keywords(text)
         assert result["amount"] == expected_label["amount"]

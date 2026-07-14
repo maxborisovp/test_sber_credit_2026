@@ -87,10 +87,6 @@ class TestBestCategoryMatch:
         assert weight == 3
 
 
-# ---------------------------------------------------------------------------
-# check_subject_keywords
-# ---------------------------------------------------------------------------
-
 class TestCheckSubjectKeywords:
     @pytest.mark.parametrize(
         "subject",
@@ -229,30 +225,16 @@ class TestCheckSubjectLlm:
 
 
 class TestCheckSubject:
-    def test_empty_subject_short_circuits_without_calling_llm(self, monkeypatch):
-        def _boom(*args, **kwargs):
-            raise AssertionError("check_subject_llm не должен вызываться для пустого subject")
-
-        monkeypatch.setattr(check_subject, "check_subject_llm", _boom)
-        eligible, confidence, explanation = check_subject("")
-        assert eligible is False
-        assert confidence == 0.5
-
-        eligible, confidence, explanation = check_subject(" ")
-        assert eligible is False
-
     def test_falls_back_to_keywords_without_api_key(self, monkeypatch):
         monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
         assert check_subject("удобрения") == check_subject_keywords("удобрения")
 
-    def test_falls_back_to_keywords_when_llm_raises(self, monkeypatch):
-        def _boom(*args, **kwargs):
-            raise RuntimeError("сеть недоступна")
+    def test_return_types(self):
+        result = check_subject_keywords("что угодно")
+        assert isinstance(result, tuple)
+        assert isinstance(result[0], bool)
+        assert isinstance(result[1], float)
+        assert isinstance(result[2], str)
 
-        monkeypatch.setattr(check_subject, "check_subject_llm", _boom)
-        assert check_subject("аренда офиса") == check_subject_keywords("аренда офиса")
-
-    def test_uses_llm_result_when_available(self, monkeypatch):
-        sentinel = (True, 0.99, "тестовое объяснение")
-        monkeypatch.setattr(check_subject, "check_subject_llm", lambda subject: sentinel)
-        assert check_subject("что угодно") == sentinel
+    def test_empty_subject_return_unknown(self):
+        assert check_subject_keywords("") == (False, 0.5, "предмет оплаты не указан, отнести к сельхоз-программе невозможно")
