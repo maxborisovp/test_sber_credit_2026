@@ -14,8 +14,7 @@ def _response_content_to_text(content) -> str:
 
     У некоторых провайдеров (например, langchain_google_genai / Gemini)
     content бывает не строкой, а списком частей — строк или словарей вида
-    {"type": "text", "text": "..."} — из-за чего .strip() падает с ошибкой
-    "'list' object has no attribute 'strip'". Эта функция нормализует оба
+    {"type": "text", "text": "..."}. Эта функция нормализует оба
     варианта в обычную строку.
     """
     if isinstance(content, str):
