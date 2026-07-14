@@ -1,6 +1,4 @@
 """
-test_py
-
 Pytest-тесты для py.
 
 Тесты для *_llm функций подменяют langchain_core/langchain_google_genai через

@@ -1,5 +1,5 @@
 """
-classify.py
+classification.py
 
 Классификация типа документа: contract, spec, invoice, act, unknown.
 

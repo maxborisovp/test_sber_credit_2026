@@ -1,5 +1,5 @@
 """
-extract.py
+extraction.py
 
 Извлечение полей из текста документа: amount, date, inn, contractor, subject.
 
