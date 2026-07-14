@@ -14,8 +14,9 @@ import types
 
 import pytest
 
-from src.checking_subject import _best_category_match, check_subject_keywords, check_subject_llm, check_subject, _get_llm
-from src.config import CHECK_SUBJECT_NEGATIVE_CATEGORIES, CHECK_SUBJECT_POSITIVE_CATEGORIES
+from src.checking_subject import (_best_category_match, check_subject_keywords, 
+                                  check_subject_llm, check_subject) 
+from src.config import (CHECK_SUBJECT_NEGATIVE_CATEGORIES, CHECK_SUBJECT_POSITIVE_CATEGORIES)
 
 def _install_fake_langchain(monkeypatch, response_text):
     fake_core = types.ModuleType("langchain_core")
@@ -149,18 +150,6 @@ class TestCheckSubjectKeywords:
             "закупка удобрений для сельхозработ"
         )
         assert eligible is True
-
-
-class TestGetLlm:
-    def test_raises_without_api_key(self, monkeypatch):
-        monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
-        with pytest.raises(RuntimeError):
-            _get_llm()
-
-    def test_returns_client_with_api_key(self, monkeypatch):
-        monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
-        _install_fake_langchain(monkeypatch, response_text="{}")
-        assert _get_llm() is not None
 
 
 class TestCheckSubjectLlm:

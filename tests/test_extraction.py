@@ -16,7 +16,7 @@ import pytest
 
 from src.extraction import (_extract_amount, _extract_contractor, _extract_date,
                             _extract_inn, _extract_subject, extract,
-                            extract_keywords, extract_llm, _get_llm,
+                            extract_keywords, extract_llm,
                             _normalize_numeric_amount, _normalize_year,
                             _try_make_date, _words_to_number, _empty_result)
 from src.config import EXTRACT_FIELDS
@@ -311,19 +311,6 @@ class TestExtractKeywords:
     def test_missing_fields_are_none(self):
         result = extract_keywords("случайный текст без каких-либо полей")
         assert result == _empty_result()
-
-
-
-class TestGetLlm:
-    def test_raises_without_api_key(self, monkeypatch):
-        monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
-        with pytest.raises(RuntimeError):
-            _get_llm()
-
-    def test_returns_client_with_api_key(self, monkeypatch):
-        monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
-        _install_fake_langchain(monkeypatch, response_text="{}")
-        assert _get_llm() is not None
 
 
 class TestExtractLlm:

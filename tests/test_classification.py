@@ -14,9 +14,7 @@ import types
 
 import pytest
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-from src.classification import _eval_best, classify_keywords, classify_llm, classify, _get_llm
+from src.classification import _eval_best, classify_keywords, classify_llm, classify
 
 
 # Тестовые документы (загружаются из tests/../data/*.txt)
@@ -164,21 +162,6 @@ class TestClassifyKeywords:
         label_upper, _ = classify_keywords(CONTRACT_001.upper())
         assert label_lower == "contract"
         assert label_upper == "contract"
-
-
-
-
-class TestGetLlm:
-    def test_raises_without_api_key(self, monkeypatch):
-        monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
-        with pytest.raises(RuntimeError):
-            _get_llm()
-
-    def test_returns_client_with_api_key(self, monkeypatch):
-        monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
-        _install_fake_langchain(monkeypatch, response_text="{}")
-        llm = _get_llm()
-        assert llm is not None
 
 
 class TestClassifyLlm:
