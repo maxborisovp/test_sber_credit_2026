@@ -19,57 +19,66 @@ import json
 import os
 import re
 from typing import Dict, List, Optional, Tuple
-from src.config import (CHECK_SUBJECT_POSITIVE_CATEGORIES, CHECK_SUBJECT_NEGATIVE_CATEGORIES,
-                        CHECK_SUBJECT_POSITIVE_CONFIDENCE_BY_WEIGHT,
-                        CHECK_SUBJECT_NEGATIVE_CONFIDENCE_BY_WEIGHT,)
+from src.config import (CHECK_SUBJECT_POSITIVE_CATEGORIES, CHECK_SUBJECT_NEGATIVE_CATEGORIES,)
 from src.llm_client import _response_content_to_text, _get_llm
 
-def _best_category_match(
+def _category_match(
     text: str, categories: List[Tuple[str, List[Tuple[str, float]]]]
-) -> Optional[Tuple[str, str, float]]:
+) -> Tuple[float, List[Tuple[str, str, float]]]:
     """
-    Возвращает (категория, совпавший_фрагмент, вес) для самого сильного
-    совпадения среди категорий, либо None, если совпадений не было.
+    Подсчитывает суммарный вес всех совпадений и возвращает список найденных совпадений.
+    Возвращает (общий_вес, список_совпадений).
     """
-    best: Optional[Tuple[str, str, float]] = None
+    matches = []
+    total_weight = 0.0
+    
     for category, rules in categories:
         for pattern, weight in rules:
-            m = re.search(pattern, text, flags=re.IGNORECASE)
-            if m and (best is None or weight > best[2]):
-                best = (category, m.group(0), weight)
-    return best
-
+            for m in re.finditer(pattern, text, flags=re.IGNORECASE):
+                matches.append((category, m.group(0), weight))
+                total_weight += weight
+    
+    return total_weight, matches
 
 def check_subject_keywords(subject: str) -> Tuple[bool, float, str]:
     """
     Локальная проверка без LLM: ищет в тексте предмета оплаты маркеры
-    "сельхоз"-категорий и заведомо непрофильных категорий, выбирает наиболее
-    специфичное совпадение и формирует объяснение.
+    "сельхоз"-категорий и заведомо непрофильных категорий, вычисляет
+    суммарные веса и определяет confidence на основе их соотношения.
     """
     text = subject.lower().strip()
     if not text:
         return False, 0.5, "предмет оплаты не указан, отнести к сельхоз-программе невозможно"
+    
+    positive_weight, positive_matches = _category_match(text, CHECK_SUBJECT_POSITIVE_CATEGORIES)
+    negative_weight, negative_matches = _category_match(text, CHECK_SUBJECT_NEGATIVE_CATEGORIES)
 
-    positive = _best_category_match(text, CHECK_SUBJECT_POSITIVE_CATEGORIES)
-    negative = _best_category_match(text, CHECK_SUBJECT_NEGATIVE_CATEGORIES)
+    total_weight = positive_weight + negative_weight
+    confidence = positive_weight / total_weight
+    confidence = max(0.1, min(0.9, confidence))
 
-    if positive and (not negative or positive[2] >= negative[2]):
-        category, matched, weight = positive
-        confidence = CHECK_SUBJECT_POSITIVE_CONFIDENCE_BY_WEIGHT.get(weight, 0.6)
-        explanation = f"'{matched.strip()}' относится к категории '{category}', которая покрывается сельхоз-программой"
-        return True, confidence, explanation
+    all_matches = []
+    if positive_matches:
+        pos_summary = ", ".join([f"'{m[1]}'" for m in positive_matches[:3]])
+        if len(positive_matches) > 3:
+            pos_summary += f" и еще {len(positive_matches) - 3} совпад."
+        all_matches.append(f"сельхоз-маркеры: {pos_summary}")
+    
+    if negative_matches:
+        neg_summary = ", ".join([f"'{m[1]}'" for m in negative_matches[:3]])
+        if len(negative_matches) > 3:
+            neg_summary += f" и еще {len(negative_matches) - 3} совпад."
+        all_matches.append(f"несельхоз-маркеры: {neg_summary}")
+    
+    matches_summary = "; ".join(all_matches) if all_matches else "совпадений не найдено"
+    
+    if confidence > 0.6:
+        return True, confidence, f"{matches_summary}"
+    elif confidence < 0.4:
+        return False, 1.0-confidence, f"{matches_summary}"
+    else:
+        return False, confidence, f"спорный/неочевидный случай: {matches_summary}"
 
-    if negative:
-        category, matched, weight = negative
-        confidence = CHECK_SUBJECT_NEGATIVE_CONFIDENCE_BY_WEIGHT.get(weight, 0.6)
-        explanation = f"'{matched.strip()}' относится к категории '{category}' и не относится к сельхоз-деятельности"
-        return False, confidence, explanation
-
-    return (
-        False,
-        0.5,
-        "не удалось однозначно отнести предмет к сельскохозяйственной деятельности по имеющимся признакам",
-    )
 
 
 def check_subject_llm(subject: str) -> Tuple[bool, float, str]:
