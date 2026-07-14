@@ -322,7 +322,6 @@ def extract(text: str) -> Dict[str, Any]:
 
     try:
         return extract_llm(text)
-    except Exception as e:
-        print(e)
+    except Exception:
         return extract_keywords(text)
 

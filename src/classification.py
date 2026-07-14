@@ -145,7 +145,6 @@ def classify(text: str) -> Tuple[str, float]:
     
     try:
         return classify_llm(text)
-    except Exception as e:
-        print(e)
+    except Exception:
         return classify_keywords(text)
 

@@ -139,7 +139,6 @@ def check_subject(subject: str) -> Tuple[bool, float, str]:
 
     try:
         return check_subject_llm(subject)
-    except Exception as e:
-        print(e)
+    except Exception:
         return check_subject_keywords(subject)
 
