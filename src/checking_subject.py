@@ -53,10 +53,6 @@ def check_subject_keywords(subject: str) -> Tuple[bool, float, str]:
     positive_weight, positive_matches = _category_match(text, CHECK_SUBJECT_POSITIVE_CATEGORIES)
     negative_weight, negative_matches = _category_match(text, CHECK_SUBJECT_NEGATIVE_CATEGORIES)
 
-    total_weight = positive_weight + negative_weight
-    confidence = positive_weight / total_weight
-    confidence = max(0.1, min(0.9, confidence))
-
     all_matches = []
     if positive_matches:
         pos_summary = ", ".join([f"'{m[1]}'" for m in positive_matches[:3]])
@@ -71,6 +67,10 @@ def check_subject_keywords(subject: str) -> Tuple[bool, float, str]:
         all_matches.append(f"несельхоз-маркеры: {neg_summary}")
     
     matches_summary = "; ".join(all_matches) if all_matches else "совпадений не найдено"
+
+    total_weight = positive_weight + negative_weight
+    confidence = positive_weight / total_weight if total_weight != 0 else 0.5
+    confidence = max(0.1, min(0.9, confidence))
     
     if confidence > 0.6:
         return True, confidence, f"{matches_summary}"
