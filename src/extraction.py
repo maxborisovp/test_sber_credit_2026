@@ -21,7 +21,7 @@ from datetime import date as _date
 from typing import Any, Dict, Optional
 from src.config import (EXTRACT_FIELDS, EXTRACT_MONTHS_RU, EXTRACT_WORD_NUMS,
                     EXTRACT_WORD_SCALES, EXTRACT_CONTRACTOR_LABELS,)
-
+from src.llm_client import _response_content_to_text, _get_llm
 
 def _empty_result() -> Dict[str, Any]:
     return {field: None for field in EXTRACT_FIELDS}
@@ -251,7 +251,7 @@ def _get_llm():
     # langchain_google_genai, если используется только fallback-режим.
     from langchain_google_genai import ChatGoogleGenerativeAI
 
-    return ChatGoogleGenerativeAI(model="gemini-2.0-flash-lite", temperature=0)
+    return ChatGoogleGenerativeAI(model="gemini-3.5-flash", temperature=0)
 
 def extract_llm(text: str) -> Dict[str, Any]:
     """
@@ -286,7 +286,7 @@ def extract_llm(text: str) -> Dict[str, Any]:
         ]
     )
 
-    content = response.content.strip()
+    content = _response_content_to_text(response.content).strip()
     content = re.sub(r"^```(?:json)?|```$", "", content, flags=re.MULTILINE).strip()
 
     data = json.loads(content)
@@ -322,6 +322,7 @@ def extract(text: str) -> Dict[str, Any]:
 
     try:
         return extract_llm(text)
-    except Exception:
+    except Exception as e:
+        print(e)
         return extract_keywords(text)
 

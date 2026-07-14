@@ -20,7 +20,7 @@ import json
 from typing import Dict, Tuple
 from src.config import (CLASSIFY_KEYWORD_RULES, CLASSIFY_MIN_BEST_CONFIDENCE,
                         CLASSIFY_GAP_THRESHOLD, CLASSIFY_LABELS)
-
+from src.llm_client import _response_content_to_text, _get_llm
 
 def _eval_best(scores: Dict[str, float]) -> Tuple[str, float]:
     """
@@ -84,7 +84,7 @@ def _get_llm():
     # langchain_google_genai, если используется только fallback-режим.
     from langchain_google_genai import ChatGoogleGenerativeAI
 
-    return ChatGoogleGenerativeAI(model="gemini-2.0-flash-lite", temperature=0)
+    return ChatGoogleGenerativeAI(model="gemini-3.5-flash", temperature=0)
 
 
 def classify_llm(text: str) -> Tuple[str, float]:
@@ -117,7 +117,7 @@ def classify_llm(text: str) -> Tuple[str, float]:
         ]
     )
 
-    content = response.content.strip()
+    content = _response_content_to_text(response.content).strip()
     # На случай, если модель всё же обернула JSON в ```json ... ```
     content = re.sub(r"^```(?:json)?|```$", "", content, flags=re.MULTILINE).strip()
     
@@ -145,6 +145,7 @@ def classify(text: str) -> Tuple[str, float]:
     
     try:
         return classify_llm(text)
-    except Exception:
+    except Exception as e:
+        print(e)
         return classify_keywords(text)
 

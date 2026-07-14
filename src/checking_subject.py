@@ -22,7 +22,7 @@ from typing import Dict, List, Optional, Tuple
 from src.config import (CHECK_SUBJECT_POSITIVE_CATEGORIES, CHECK_SUBJECT_NEGATIVE_CATEGORIES,
                         CHECK_SUBJECT_POSITIVE_CONFIDENCE_BY_WEIGHT,
                         CHECK_SUBJECT_NEGATIVE_CONFIDENCE_BY_WEIGHT,)
-
+from src.llm_client import _response_content_to_text, _get_llm
 
 def _best_category_match(
     text: str, categories: List[Tuple[str, List[Tuple[str, float]]]]
@@ -72,15 +72,6 @@ def check_subject_keywords(subject: str) -> Tuple[bool, float, str]:
     )
 
 
-def _get_llm():
-    if not os.environ.get("GOOGLE_API_KEY"):
-        raise RuntimeError("GOOGLE_API_KEY is not set")
-
-    from langchain_google_genai import ChatGoogleGenerativeAI
-
-    return ChatGoogleGenerativeAI(model="gemini-2.0-flash-lite", temperature=0)
-
-
 def check_subject_llm(subject: str) -> Tuple[bool, float, str]:
     """
     Проверка через LLM (langchain + langchain_google_genai). Требует GOOGLE_API_KEY.
@@ -114,7 +105,7 @@ def check_subject_llm(subject: str) -> Tuple[bool, float, str]:
         ]
     )
 
-    content = response.content.strip()
+    content = _response_content_to_text(response.content).strip()
     content = re.sub(r"^```(?:json)?|```$", "", content, flags=re.MULTILINE).strip()
 
     data = json.loads(content)
@@ -148,6 +139,7 @@ def check_subject(subject: str) -> Tuple[bool, float, str]:
 
     try:
         return check_subject_llm(subject)
-    except Exception:
+    except Exception as e:
+        print(e)
         return check_subject_keywords(subject)
 
