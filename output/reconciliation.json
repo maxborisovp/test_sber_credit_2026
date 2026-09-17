@@ -1,0 +1,46 @@
+[
+  {
+    "inn": "7701234567",
+    "documents": [
+      "act_001.txt",
+      "contract_001.txt",
+      "invoice_001.txt",
+      "scan_ocr_001.txt",
+      "spec_001.txt"
+    ],
+    "amounts_by_file": {
+      "act_001.txt": 1250000.0,
+      "contract_001.txt": 1250000.0,
+      "invoice_001.txt": 1250000.0,
+      "scan_ocr_001.txt": 1250000.0,
+      "spec_001.txt": 1250000.0
+    },
+    "amount_consistent": true,
+    "note": "суммы совпадают по всем 5 документам с суммой",
+    "status": "ok"
+  },
+  {
+    "inn": "504712345678",
+    "documents": [
+      "act_002.txt"
+    ],
+    "amounts_by_file": {
+      "act_002.txt": 500000.0
+    },
+    "amount_consistent": true,
+    "note": "по этому контрагенту только один документ - сверять не с чем",
+    "status": "ok"
+  },
+  {
+    "inn": "5047123456",
+    "documents": [
+      "invoice_002.txt"
+    ],
+    "amounts_by_file": {
+      "invoice_002.txt": 900000.0
+    },
+    "amount_consistent": true,
+    "note": "по этому контрагенту только один документ - сверять не с чем",
+    "status": "ok"
+  }
+]

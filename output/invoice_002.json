@@ -1,0 +1,19 @@
+{
+  "file": "invoice_002.txt",
+  "doc_type": "invoice",
+  "doc_type_confidence": 0.97,
+  "fields": {
+    "amount": 900000.0,
+    "date": "2025-02-15",
+    "inn": "5047123456",
+    "contractor": "АО «АгроСнаб»",
+    "subject": "поставка семян подсолнечника сорта «Командор», посевная партия 2025"
+  },
+  "subject_check": {
+    "matches": true,
+    "confidence": 0.9,
+    "reason": "предмет относится к категории «семена и посадочный материал»"
+  },
+  "status": "ok",
+  "notes": []
+}

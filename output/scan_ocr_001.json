@@ -1,0 +1,22 @@
+{
+  "file": "scan_ocr_001.txt",
+  "doc_type": "unknown",
+  "doc_type_confidence": 0.5,
+  "fields": {
+    "amount": 1250000.0,
+    "date": "2025-03-01",
+    "inn": "7701234567",
+    "contractor": null,
+    "subject": null
+  },
+  "subject_check": {
+    "matches": false,
+    "confidence": 0.0,
+    "reason": "предмет оплаты не извлечён из документа - проверка невозможна"
+  },
+  "status": "requires_manual_review",
+  "notes": [
+    "тип документа не удалось определить с достаточной уверенностью",
+    "предмет оплаты не подходит под программу: предмет оплаты не извлечён из документа - проверка невозможна"
+  ]
+}

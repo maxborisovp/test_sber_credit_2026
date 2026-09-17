@@ -1,0 +1,19 @@
+{
+  "file": "act_002.txt",
+  "doc_type": "act",
+  "doc_type_confidence": 0.91,
+  "fields": {
+    "amount": 500000.0,
+    "date": "2025-04-01",
+    "inn": "504712345678",
+    "contractor": "ИП Смирнов В.А.",
+    "subject": "Договор на выполнение агрохимических работ"
+  },
+  "subject_check": {
+    "matches": true,
+    "confidence": 0.75,
+    "reason": "предмет относится к категории «агрохимия (удобрения, СЗР)»"
+  },
+  "status": "ok",
+  "notes": []
+}

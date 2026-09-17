@@ -1,0 +1,19 @@
+{
+  "file": "act_001.txt",
+  "doc_type": "act",
+  "doc_type_confidence": 0.96,
+  "fields": {
+    "amount": 1250000.0,
+    "date": "2025-03-24",
+    "inn": "7701234567",
+    "contractor": "ООО «ТехАгро»",
+    "subject": "Карбамид марки Б"
+  },
+  "subject_check": {
+    "matches": true,
+    "confidence": 0.75,
+    "reason": "предмет относится к категории «агрохимия (удобрения, СЗР)»"
+  },
+  "status": "ok",
+  "notes": []
+}
